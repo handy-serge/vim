@@ -7577,7 +7577,15 @@ term_free_conpty(term_T *term)
     int
 use_conpty(void)
 {
-    return has_conpty;
+    // Do not rely on has_conpty: it is only ever set as a side effect of
+    // actually starting a terminal (term_and_job_init(), below), so
+    // has('conpty') answered FALSE on a session that had never opened one,
+    // even though :help has() promises "Platform where ConPTY can be used" --
+    // a capability, not a history. dyn_conpty_init() answers the capability
+    // question directly, and cheaply: it memoizes after the first real
+    // lookup (kernel32.dll is already mapped in every process), the same way
+    // terminal_enabled() already relies on it below.
+    return dyn_conpty_init(FALSE) != FAIL;
 }
 
 # define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul

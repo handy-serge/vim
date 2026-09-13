@@ -2530,4 +2530,28 @@ func Test_terminal_unwraps()
   bwipe!
 endfunc
 
+" has('conpty') is documented as "Platform where ConPTY can be used" -- a
+" capability question -- but used to answer FALSE for a session that had
+" never actually opened a terminal, since it read a flag only ever set as a
+" side effect of doing so. Run in an ISOLATED fresh process, not inline:
+" this test file starts many terminals before this point would run, and by
+" then the flag was already latched (buggily or not), which would let the
+" bug pass unnoticed if checked in the shared test-runner instance.
+func Test_conpty_available_before_any_terminal()
+  CheckMSWindows
+  let cleanup =<< trim END
+    let before = has('conpty')
+    let buf = term_start('cmd /c exit', {'term_finish': 'close'})
+    call term_wait(buf)
+    call writefile([before, has('conpty')], 'Xtest.out')
+    qall
+  END
+  call writefile(cleanup, 'Xverify.vim', 'D')
+  call RunVim([], [], '-u NONE -i NONE --not-a-term -S Xverify.vim')
+  let result = readfile('Xtest.out')
+  call assert_equal(result[0], result[1],
+        \ "has('conpty') must not depend on whether a terminal has run")
+  call delete('Xtest.out')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
