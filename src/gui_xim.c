@@ -1373,10 +1373,12 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 
     // When typing fFtT, XIM may be activated. Thus it must pass
     // gtk_im_context_filter_keypress() in Normal mode.
-    // And while doing :sh too.
+    // And while doing :sh too.  And in a terminal window, otherwise a dead
+    // key is dropped instead of composing with the next key.
     if (xic != NULL && !p_imdisable
 		    && (State & (MODE_INSERT | MODE_CMDLINE
-					      | MODE_NORMAL | MODE_EXTERNCMD)))
+					      | MODE_NORMAL | MODE_EXTERNCMD
+					      | MODE_TERMINAL)))
     {
 	// Filter 'imactivatekey' and map it to CTRL-^.  This way, Vim is
 	// always aware of the current status of IM, and can even emulate

@@ -2466,9 +2466,12 @@ process_message(void)
 		return;
 	    }
 	    // In modes where we are not typing, dead keys should behave
-	    // normally
+	    // normally. A terminal window is typing too: MODE_TERMINAL was
+	    // never added here when :terminal replaced the older :sh, so a
+	    // dead key was expelled instead of composed inside one.
 	    else if ((get_real_state()
-			    & (MODE_INSERT | MODE_CMDLINE | MODE_SELECT)) == 0)
+			    & (MODE_INSERT | MODE_CMDLINE | MODE_SELECT
+						    | MODE_TERMINAL)) == 0)
 	    {
 		outputDeadKey_rePost(msg);
 		return;
